@@ -1,22 +1,44 @@
 # Recommended fonts
 
-Load fonts with [`next/font/google`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) for zero layout shift. The stock template ships **system-ui** in `src/config/fonts.ts` so builds work offline; **when you fork or rebrand, pick a font and wire it in the layout** (see below).
+Load fonts with [`next/font/google`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) for zero layout shift. The stock template ships **system-ui** in `globals.css` so builds work offline; **when you fork or rebrand, pick a font and wire all three places** (see below).
 
 ---
 
 ## For AI agents — choose a font first
 
-When starting template customization (fork, rebrand, or new product), **choose one primary sans-serif** before editing landing or auth UI. Do not leave the default system stack unless the user explicitly wants no web font.
+When starting template customization (fork, rebrand, or new product), **choose one primary sans-serif** before editing landing or auth UI.
 
-### Checklist (three files)
+### Checklist (three files — same family name everywhere)
 
 | Step | File | Action |
 |------|------|--------|
-| 1 | `src/config/fonts.ts` | Import from `next/font/google`, export `appFont` with `variable: "--font-<name>"` and weights `400`–`700` |
-| 2 | `src/app/layout.tsx` | Keep `className={appFont.variable}` on `<body>` (already wired) |
-| 3 | `src/app/globals.css` | Set `--app-font: var(--font-<name>), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` |
+| 1 | `src/config/fonts.ts` | `next/font/google` loader, `variable: "--font-<slug>"`, weights `400`–`700` |
+| 2 | `src/app/layout.tsx` | `className={appFont.variable}` on `<body>` (loads font files) |
+| 3 | `src/app/globals.css` | **`--app-font` with the literal family name** + system fallbacks |
 
-Optional: second font (e.g. Playfair Display) only for hero/display — add another loader in `fonts.ts`, apply its variable on specific elements via styled-jsx, not on `<body>`.
+### Critical: do not use `var(--font-*)` inside `:root` `--app-font`
+
+`next/font` defines `--font-poppins` (etc.) **on `<body>`** via `appFont.variable`, not on `:root`.
+
+If you write this in `:root`:
+
+```css
+/* Wrong — variable is undefined on :root, browser skips to fallback */
+--app-font: var(--font-poppins), system-ui, sans-serif;
+```
+
+`--app-font` is resolved where it is defined (`:root`). At that scope `--font-poppins` does not exist yet, so the custom font is dropped and you only see system-ui.
+
+**Correct pattern** — literal name in `globals.css`, loader + body class from `next/font`:
+
+```css
+/* :root in globals.css */
+--app-font: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+```
+
+`next/font` still injects `@font-face` and optimization through `appFont.variable` on `<body>`; the literal string must match the Google Fonts family name.
+
+You may use `var(--font-poppins)` on **specific elements** under `<body>` (e.g. a hero title), but **not** when defining `--app-font` on `:root`.
 
 ### Example (Poppins)
 
@@ -25,6 +47,7 @@ Optional: second font (e.g. Playfair Display) only for hero/display — add anot
 ```ts
 import { Poppins } from "next/font/google"
 
+/** Swap loader + match literal name in globals.css --app-font */
 export const appFont = Poppins({
   subsets: ["latin"],
   variable: "--font-poppins",
@@ -33,13 +56,38 @@ export const appFont = Poppins({
 })
 ```
 
+`src/app/layout.tsx` (already wired):
+
+```tsx
+<body className={appFont.variable}>
+```
+
 `src/app/globals.css` (`:root`):
 
 ```css
---app-font: var(--font-poppins), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+/* Typography — Poppins (see src/config/fonts.ts, docs/FONTS.md)
+   Keep literal; do not use var(--font-poppins) here. */
+--app-font: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 ```
 
-`src/app/layout.tsx` already applies `appFont.variable` on `<body>` — no change needed if you only swap the loader in `fonts.ts` and update `--app-font`.
+### Example (Red Hat Display)
+
+Same pattern (verified in production on agentfloors-platform):
+
+```ts
+import { Red_Hat_Display } from "next/font/google"
+
+export const appFont = Red_Hat_Display({
+  subsets: ["latin"],
+  variable: "--font-red-hat-display",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+})
+```
+
+```css
+--app-font: "Red Hat Display", system-ui, -apple-system, "Segoe UI", sans-serif;
+```
 
 ---
 
@@ -60,17 +108,16 @@ export const appFont = Poppins({
 })
 ```
 
+`globals.css`: `--app-font: "Poppins", system-ui, ...`
+
 ---
 
 ## Raleway
 
 - **Style:** elegant sans with open counters  
 - **Good for:** landing pages, sign-in/sign-up, light headlines  
-- **Pair with:** Poppins or Plus Jakarta Sans for body  
 
 ```ts
-import { Raleway } from "next/font/google"
-
 export const appFont = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
@@ -79,17 +126,16 @@ export const appFont = Raleway({
 })
 ```
 
+`globals.css`: `--app-font: "Raleway", system-ui, ...`
+
 ---
 
 ## Plus Jakarta Sans
 
 - **Style:** neutral contemporary sans  
 - **Good for:** SaaS, B2B, dense tables and data UI  
-- **Pair with:** Playfair Display or Raleway for marketing hero lines  
 
 ```ts
-import { Plus_Jakarta_Sans } from "next/font/google"
-
 export const appFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-plus-jakarta",
@@ -98,29 +144,19 @@ export const appFont = Plus_Jakarta_Sans({
 })
 ```
 
+`globals.css`: `--app-font: "Plus Jakarta Sans", system-ui, ...`
+
 ---
 
 ## Playfair Display (display only — not for body)
 
 - **Style:** high-contrast serif (display)  
-- **Good for:** hero titles, quotes, editorial accents — not for long body copy  
-- **Pair with:** any sans above for paragraphs and UI  
+- **Good for:** hero titles, quotes — not for `--app-font`  
 
-```ts
-import { Playfair_Display } from "next/font/google"
-
-export const displayFont = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-})
-```
-
-Use on specific elements, e.g. `font-family: var(--font-playfair), Georgia, serif` in a section’s `<style jsx>`.
+Add a second loader; use `font-family: var(--font-playfair), Georgia, serif` on specific elements in styled-jsx (under `<body>` where the variable exists).
 
 ---
 
 ## Offline / CI builds
 
-If Google Fonts must not run at build time, keep `src/config/fonts.ts` as the system fallback (`variable: ""`) and rely on `--app-font` in `globals.css`. Document that choice for the user.
+If Google Fonts must not run at build time, keep `src/config/fonts.ts` with `variable: ""` and a system stack only in `--app-font`. Document that choice for the user.

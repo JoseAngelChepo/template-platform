@@ -42,7 +42,7 @@ Global tokens + styles inside each component file. Full conventions: **[COMPONEN
 ### 0) Font (first step when forking)
 
 - **Pick one font** from [`docs/FONTS.md`](./FONTS.md) (agents: do this before landing/auth tweaks).
-- **Wire**: `src/config/fonts.ts` → `src/app/layout.tsx` (`appFont.variable` on `<body>`) → `--app-font` in `globals.css`.
+- **Wire**: `src/config/fonts.ts` → `layout.tsx` (`appFont.variable` on `<body>`) → **literal** font name in `--app-font` in `globals.css` (not `var(--font-*)` on `:root`).
 
 ### 1) Tokens (always first)
 

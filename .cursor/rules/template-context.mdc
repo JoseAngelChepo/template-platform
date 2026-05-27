@@ -30,7 +30,7 @@ Replace names, env vars, and copy when launching a real product.
 ## Styling
 
 - Light theme tokens in `src/app/globals.css` (`--app-*` CSS variables).
-- Default font: **Poppins** (`src/config/fonts.ts`). Other suggestions (Raleway, Plus Jakarta Sans, Playfair Display): `docs/FONTS.md`.
+- Default font: **system-ui** (offline-friendly). When forking: pick a font per `docs/FONTS.md` — loader in `fonts.ts`, `appFont.variable` on `<body>`, **literal** name in `--app-font` (not `var(--font-*)` on `:root`).
 
 ## i18n
 

@@ -11,9 +11,9 @@ Related: [COMPONENTS.md](./COMPONENTS.md) (folder layout), [LANDING.md](./LANDIN
 Before changing colors or landing sections on a fork:
 
 1. **Choose** a primary font from [FONTS.md](./FONTS.md).
-2. **Configure** `src/config/fonts.ts`, confirm `src/app/layout.tsx` applies `appFont.variable` on `<body>`, and set `--app-font` in `src/app/globals.css`.
+2. **Configure** `src/config/fonts.ts`, `appFont.variable` on `<body>` in `layout.tsx`, and a **literal** `--app-font: "Your Font", system-ui, ...` in `globals.css` (not `var(--font-*)` on `:root` — see FONTS.md).
 
-All styled-jsx and auth UI inherit `--app-font` from the root layout.
+All styled-jsx and auth UI use `font-family: var(--app-font)` and inherit from `html`/`body`.
 
 ---
 

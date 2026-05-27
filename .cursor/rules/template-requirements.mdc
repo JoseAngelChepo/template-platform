@@ -80,7 +80,7 @@ Full map: `docs/LANDING.md`.
 
 When changing visual identity, follow `docs/FONTS.md`, `docs/COMPONENTS.md`, and `docs/COMPONENT-STYLES.md`:
 
-1. **Font** — pick one family in `src/config/fonts.ts`, apply `appFont.variable` on `<body>` in `layout.tsx`, set `--app-font` in `globals.css`.
+1. **Font** — `fonts.ts` + `appFont.variable` on `<body>` + **literal** `--app-font` in `globals.css` (never `var(--font-*)` on `:root`; see `docs/FONTS.md`).
 2. **`src/app/globals.css`** — `--app-*` tokens.
 3. **Forms** — `src/components/auth/SignInForm.tsx`, `SignUpForm.tsx`, `.auth-*` in globals.css, optional `GoogleAuthButton.tsx`.
 4. **Toasts** — `src/app/toastify-theme.css`, `src/app/providers.tsx`, `src/lib/toast.ts`.
