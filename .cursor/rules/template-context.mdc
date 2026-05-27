@@ -1,0 +1,37 @@
+---
+description: Template context
+alwaysApply: true
+---
+
+# Template — project context
+
+Starter monorepo layout (sibling repos under the same parent folder). **Fork requirements, favicon, i18n, landing edit map, and component rules:** see **`template-requirements.mdc`**.
+
+Replace names, env vars, and copy when launching a real product.
+
+## Sibling repos
+
+- **`template-platform`** (this repo): Next.js + TypeScript web app — auth UI, API client, i18n helpers. Components: `src/components/ui/`, `auth/`, `layout/`, `landing/` — see `docs/COMPONENTS.md`.
+- **`template-services`**: backend API (NestJS). **HTTP contracts, DTOs, and status codes live there** — read that repo before assuming request/response shapes or validation rules.
+
+## Environment
+
+- `src/config/env.ts`: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL` (defaults to local API in dev). Set via env in each deployment.
+- API base path is typically `/api/v1` on the services host.
+
+## App shell
+
+- **`/`**: public landing page — `src/components/landing/` + copy in `src/content/landing.ts`.
+- **`/dashboard`**: authenticated home — `AuthGuard` + `HomeShell`.
+- **Public routes** (no session): `/`, `/sign-in`, `/sign-up`, `/auth/google/callback` — see `AuthGuard` and `src/proxy.ts` when adding routes.
+- **Locale proxy**: `src/proxy.ts` (Next.js 16 proxy convention) strips `/en` and `/es` URL prefixes and sets the `NEXT_LOCALE` cookie for API/locale headers.
+- **Client state**: `ServicesProvider` (`src/data/providers/ServicesProvider.tsx`); auth-only API surface in `src/data/api/server/`; user payloads normalized via `normalizeAuthMeUser`.
+
+## Styling
+
+- Light theme tokens in `src/app/globals.css` (`--app-*` CSS variables).
+- Default font: **Poppins** (`src/config/fonts.ts`). Other suggestions (Raleway, Plus Jakarta Sans, Playfair Display): `docs/FONTS.md`.
+
+## i18n
+
+- Message bundles in `src/messages/en.json` and `src/messages/es.json`; client hook `src/i18n/client.ts` (`useMessages`, `readLocaleFromCookie`). Wire copy in forms/pages as you grow the app.
