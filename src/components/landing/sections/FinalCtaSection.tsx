@@ -1,25 +1,63 @@
-import Link from "next/link"
 import { landingContent } from "@/content/landing"
+import LandingButton from "../LandingButton"
+import LandingContainer from "../LandingContainer"
+import LandingSection from "../LandingSection"
 
 export default function FinalCtaSection() {
   const { finalCta } = landingContent
 
   return (
-    <section className="landing-section landing-section--cta" aria-labelledby="landing-final-cta-title">
-      <div className="landing-container landing-cta">
-        <h2 id="landing-final-cta-title" className="landing-title">
-          {finalCta.title}
-        </h2>
-        <p className="landing-lede">{finalCta.lede}</p>
-        <div className="landing-hero__actions">
-          <Link href={finalCta.primaryCta.href} className="landing-btn landing-btn--primary landing-btn--lg">
-            {finalCta.primaryCta.label}
-          </Link>
-          <Link href={finalCta.secondaryCta.href} className="landing-btn landing-btn--secondary landing-btn--lg">
-            {finalCta.secondaryCta.label}
-          </Link>
+    <LandingSection variant="cta" aria-labelledby="landing-final-cta-title">
+      <LandingContainer>
+        <div className="cta">
+          <h2 id="landing-final-cta-title" className="title">
+            {finalCta.title}
+          </h2>
+          <p className="lede">{finalCta.lede}</p>
+          <div className="actions">
+            <LandingButton href={finalCta.primaryCta.href} variant="primary" size="lg" inverted>
+              {finalCta.primaryCta.label}
+            </LandingButton>
+            <LandingButton href={finalCta.secondaryCta.href} variant="secondary" size="lg" inverted>
+              {finalCta.secondaryCta.label}
+            </LandingButton>
+          </div>
         </div>
-      </div>
-    </section>
+      </LandingContainer>
+      <style jsx>{`
+        .cta {
+          text-align: center;
+        }
+        .title {
+          margin: 0 auto 1rem;
+          max-width: 32rem;
+          font-size: 2rem;
+          font-weight: 600;
+          letter-spacing: -0.025em;
+          line-height: 1.1;
+          color: var(--app-bg);
+          text-wrap: balance;
+        }
+        .lede {
+          margin: 0 auto 1.5rem;
+          max-width: 32rem;
+          font-size: 1rem;
+          line-height: 1.6;
+          color: rgba(255, 255, 255, 0.7);
+          text-wrap: pretty;
+        }
+        .actions {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 0.625rem;
+        }
+        @media (min-width: 1024px) {
+          .title {
+            font-size: 2.5rem;
+          }
+        }
+      `}</style>
+    </LandingSection>
   )
 }

@@ -2,6 +2,8 @@
 
 This template uses a **feature + shared UI** layout (not Atomic Design by default). It scales well for small and medium apps without extra ceremony.
 
+**Styling:** see **[COMPONENT-STYLES.md](./COMPONENT-STYLES.md)** for how to create components with colocated styled-jsx, tokens, and shared primitives.
+
 ```
 src/components/
 ├── ui/           # Reusable, domain-agnostic pieces (Button, Loader, Input…)
@@ -35,12 +37,17 @@ Optional barrel files (`index.ts`) only if a folder exports many symbols and imp
 
 ## Styling customization (what to edit when you rebrand)
 
-This template keeps styling intentionally simple: global tokens + a few scoped classnames. When you pick a new theme, **start by updating tokens**, then customize the few components that visually dominate the experience.
+Global tokens + styles inside each component file. Full conventions: **[COMPONENT-STYLES.md](./COMPONENT-STYLES.md)**. When you rebrand, **start with tokens**, then adjust the components users see most (auth forms, landing hero, buttons).
+
+### 0) Font (first step when forking)
+
+- **Pick one font** from [`docs/FONTS.md`](./FONTS.md) (agents: do this before landing/auth tweaks).
+- **Wire**: `src/config/fonts.ts` → `src/app/layout.tsx` (`appFont.variable` on `<body>`) → `--app-font` in `globals.css`.
 
 ### 1) Tokens (always first)
 
 - **File**: `src/app/globals.css`
-- **Edit**: `:root` variables (`--app-*`) and the `--app-font` stack.
+- **Edit**: `:root` variables (`--app-*`) and the `--app-font` stack (after choosing a font).
 - **Why**: most UI (auth, home shell, buttons, loader, toast theme) keys off these variables.
 
 ### 2) Forms (primary surface to personalize)
@@ -50,13 +57,7 @@ Auth screens are the highest-touch UI in the template, so your brand will mostly
 - **Files**:
   - `src/components/auth/SignInForm.tsx`
   - `src/components/auth/SignUpForm.tsx`
-  - `src/app/globals.css` (auth classnames)
-- **Classnames to customize** (in `globals.css`):
-  - **Layout**: `.auth-page`, `.auth-card`
-  - **Typography**: `.auth-title`, `.auth-lede`
-  - **Inputs**: `.auth-input`, `.auth-password-toggle`
-  - **Validation**: `.auth-error`, `.auth-root-error`, `.auth-hint*`
-  - **Secondary actions**: `.auth-divider`, `.auth-footer`
+  - `.auth-*` in `globals.css`
 - **Common tweaks**:
   - Increase radius/shadows for a softer SaaS look.
   - Adjust focus ring (color + thickness) for accessibility and brand.
@@ -87,9 +88,19 @@ These are small but they set the tone across the app (primary CTA, loading state
 - **`atoms/` / `molecules/` / `organisms/`** — useful for large design systems; overkill for a starter.
 - **Flat `components/*.tsx`** — fine for 3 files; breaks down past ~10.
 - **Mirroring `app/` 1:1** — routes and UI lifecycle differ; group by domain, not by URL.
+- **Global `.landing-*` blocks in `globals.css`** — landing uses styled-jsx per section; see [COMPONENT-STYLES.md](./COMPONENT-STYLES.md).
 
 ## Adding a new feature
 
 1. Create `src/components/<feature>/`.
 2. Keep route files in `src/app/...` thin: compose feature components there.
 3. If `<feature>` needs one-off UI, still prefer `ui/` when the piece is generic.
+
+## Adding a landing section (agents)
+
+1. Add content to `src/content/landing.ts`.
+2. Create `src/components/landing/sections/YourSection.tsx` using `LandingSection` + `LandingContainer`.
+3. Add section-specific styles in `<style jsx>` at the bottom of that file.
+4. Import the section in `LandingPage.tsx`.
+
+See [LANDING.md](./LANDING.md) and [COMPONENT-STYLES.md](./COMPONENT-STYLES.md).

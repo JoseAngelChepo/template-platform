@@ -1,6 +1,6 @@
 /**
- * Keep font config network-independent by default.
- * If you want branded fonts, switch to `next/font/local` with bundled files.
+ * Stock template: system-ui only (offline-friendly builds).
+ * When forking: pick a font in docs/FONTS.md, then wire here + layout.tsx + --app-font in globals.css.
  */
 export const appFont = {
   variable: "",

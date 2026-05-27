@@ -17,7 +17,15 @@ Public route: **`/`**. Authenticated app home: **`/dashboard`**.
 | 8 | Final CTA | `sections/FinalCtaSection.tsx` | `finalCta` |
 | — | Footer | `sections/LandingFooter.tsx` | `footer` |
 
-Composer: `src/components/landing/LandingPage.tsx`.
+Composer: `src/components/landing/LandingPage.tsx` (`"use client"`).
+
+## Shared landing primitives
+
+| File | Purpose |
+|------|---------|
+| `LandingSection.tsx` | Section shell — variants: `default`, `muted`, `hero`, `cta` |
+| `LandingContainer.tsx` | Max-width column; `narrow` for FAQ |
+| `LandingButton.tsx` | CTA links — `variant`, `size`, `inverted` |
 
 ## Edit copy
 
@@ -31,12 +39,17 @@ Header actions:
 
 ## Edit styles
 
-Landing uses `.landing-*` classes in **`src/app/globals.css`**. Rebrand via `--app-*` tokens first, then tweak section spacing/cards if needed.
+1. **Choose a font** and wire it in `src/config/fonts.ts`, `src/app/layout.tsx`, and `--app-font` in `globals.css` — see **[FONTS.md](./FONTS.md)** (agents: do this first).
+2. Rebrand **`--app-*` tokens** in `src/app/globals.css`.
+3. Tweak section-specific layout in each section’s `<style jsx>` block.
+4. Adjust shared primitives (`LandingButton`, `LandingSection`) only when the change applies everywhere.
+
+Do **not** add `.landing-*` classes to `globals.css`. See **[COMPONENT-STYLES.md](./COMPONENT-STYLES.md)**.
 
 ## Add or remove a section
 
 1. Add content to `src/content/landing.ts`.
-2. Create `src/components/landing/sections/YourSection.tsx`.
+2. Create `src/components/landing/sections/YourSection.tsx` (follow `FeaturesSection.tsx`).
 3. Import and render it in `LandingPage.tsx`.
 4. Optional: add a nav anchor in `header.nav` pointing to `#your-id`.
 

@@ -1,3 +1,5 @@
+"use client"
+
 import LandingHeader from "@/components/landing/LandingHeader"
 import FaqSection from "@/components/landing/sections/FaqSection"
 import FeaturesSection from "@/components/landing/sections/FeaturesSection"
@@ -11,7 +13,7 @@ import SolutionSection from "@/components/landing/sections/SolutionSection"
 
 export default function LandingPage() {
   return (
-    <div className="landing">
+    <div className="page">
       <LandingHeader />
       <main>
         <HeroSection />
@@ -24,6 +26,12 @@ export default function LandingPage() {
         <FinalCtaSection />
       </main>
       <LandingFooter />
+      <style jsx>{`
+        .page {
+          min-height: 100vh;
+          background: var(--app-bg);
+        }
+      `}</style>
     </div>
   )
 }

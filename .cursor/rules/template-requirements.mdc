@@ -18,7 +18,7 @@ See also: `template-context.mdc` (structure), `docs/COMPONENTS.md`, `docs/LANDIN
 | Brand & SEO | `src/app/layout.tsx` (`metadata.title`, `description`), `package.json` `name` |
 | Favicon & icons | See **Favicon** below |
 | Copy | `src/content/landing.ts`, auth forms, `src/messages/*.json` |
-| Theme | `--app-*` tokens in `src/app/globals.css`, optional font in `src/config/fonts.ts` |
+| Theme | `--app-*` tokens in `src/app/globals.css`; **pick a font first** — `src/config/fonts.ts` + `layout.tsx` + `--app-font` (see `docs/FONTS.md`) |
 | Env | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_API_URL`, deployment env on platform + **template-services** |
 | Routes | Remove or replace placeholder footer links (`#` privacy/terms) |
 
@@ -68,7 +68,7 @@ Landing copy currently lives in **`src/content/landing.ts`** (English only). Mov
 
 **Header auth links:** `src/components/landing/LandingHeader.tsx` — rarely needs copy changes (uses `landing.ts`).
 
-**Styles:** `src/app/globals.css` — `.landing-*` block; rebrand via `--app-*` tokens first.
+**Styles:** `--app-*` tokens in `src/app/globals.css`; landing uses styled-jsx per section + `LandingSection` / `LandingContainer` / `LandingButton` — see `docs/COMPONENT-STYLES.md`.
 
 **Do not** scatter landing copy across random components or pages. **Do not** edit `src/app/page.tsx` beyond importing `LandingPage`.
 
@@ -78,11 +78,12 @@ Full map: `docs/LANDING.md`.
 
 ## Styling & high-touch UI (forms + toasts)
 
-When changing visual identity, follow `docs/COMPONENTS.md` **Styling customization**:
+When changing visual identity, follow `docs/FONTS.md`, `docs/COMPONENTS.md`, and `docs/COMPONENT-STYLES.md`:
 
-1. **`src/app/globals.css`** — `--app-*` tokens first.
-2. **Forms** — `src/components/auth/SignInForm.tsx`, `SignUpForm.tsx`, `.auth-*` in globals.css, optional `GoogleAuthButton.tsx`.
-3. **Toasts** — `src/app/toastify-theme.css`, `src/app/providers.tsx`, `src/lib/toast.ts`.
+1. **Font** — pick one family in `src/config/fonts.ts`, apply `appFont.variable` on `<body>` in `layout.tsx`, set `--app-font` in `globals.css`.
+2. **`src/app/globals.css`** — `--app-*` tokens.
+3. **Forms** — `src/components/auth/SignInForm.tsx`, `SignUpForm.tsx`, `.auth-*` in globals.css, optional `GoogleAuthButton.tsx`.
+4. **Toasts** — `src/app/toastify-theme.css`, `src/app/providers.tsx`, `src/lib/toast.ts`.
 
 ---
 
@@ -112,6 +113,7 @@ Goal: **as easy to remove as it was to add** — no debt, no spaghetti.
 
 ## Agent behavior
 
+- On fork/rebrand, **choose and wire a font first** (`docs/FONTS.md`) before landing copy or color tweaks.
 - Prefer extending **`landing.ts`** and existing section components over one-off page bloat.
 - Minimize scope; match existing patterns (`ServicesProvider`, `AuthGuard`, `@/components/...` imports).
 - Do not reintroduce product-specific domains (arena, challenges, admin) unless the user explicitly asks.
