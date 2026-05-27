@@ -1,6 +1,8 @@
 # template-platform
 
-Next.js frontend paired with [**template-services**](../template-services). Public landing, auth, and protected dashboard.
+Next.js frontend paired with [**template-services**](https://github.com/JoseAngelChepo/template-services). Public landing, auth, and protected dashboard.
+
+**First time here?** Full local setup (clone both repos, MongoDB on macOS, env vars): [**template-local-setup**](https://github.com/JoseAngelChepo/template-local-setup) Claude Agent Skill.
 
 **This repo is a reusable starter template** — meant to be forked and extended by humans and **AI coding agents**. Placeholder branding (`YourApp`, `App`) and localhost defaults are intentional; replace them before production.
 
@@ -23,7 +25,7 @@ npm install
 npm run dev
 ```
 
-Requires **template-services** running on `http://localhost:3001` (see monorepo [README](../README.md)).
+Requires **template-services** running on `http://localhost:3001`. See the [local setup skill](https://github.com/JoseAngelChepo/template-local-setup) for the full walkthrough.
 
 ## Environment
 
@@ -39,7 +41,8 @@ See [`.env.example`](./.env.example). Never commit `.env` or `.env.local`.
 
 | Topic | File |
 |-------|------|
-| Monorepo setup | [`../README.md`](../README.md) |
+| Local setup (clone, MongoDB, env) | [template-local-setup](https://github.com/JoseAngelChepo/template-local-setup) |
+| Backend (sibling repo) | [template-services](https://github.com/JoseAngelChepo/template-services) |
 | Components & styling | [`docs/COMPONENTS.md`](./docs/COMPONENTS.md) |
 | Landing sections | [`docs/LANDING.md`](./docs/LANDING.md) |
 | Fonts | [`docs/FONTS.md`](./docs/FONTS.md) |
