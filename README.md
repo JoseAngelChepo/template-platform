@@ -4,6 +4,12 @@ Next.js frontend paired with [**template-services**](https://github.com/JoseAnge
 
 **First time here?** Full local setup (clone both repos, MongoDB on macOS, env vars): [**template-local-setup**](https://github.com/JoseAngelChepo/template-local-setup) Claude Agent Skill.
 
+**Claude Code** — in your agent’s chat, send:
+
+```text
+set up https://raw.githubusercontent.com/JoseAngelChepo/template-local-setup/main/SKILL.md
+```
+
 **This repo is a reusable starter template** — meant to be forked and extended by humans and **AI coding agents**. Placeholder branding (`YourApp`, `App`) and localhost defaults are intentional; replace them before production.
 
 ## Routes
