@@ -1,9 +1,7 @@
-import { Poppins } from "next/font/google"
-
-/** App-wide default — swap the import/loader and `--app-font` in globals.css to change. */
-export const appFont = Poppins({
-  subsets: ["latin"],
-  variable: "--font-poppins",
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-})
+/**
+ * Keep font config network-independent by default.
+ * If you want branded fonts, switch to `next/font/local` with bundled files.
+ */
+export const appFont = {
+  variable: "",
+}

@@ -24,7 +24,7 @@
   --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --app-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
   /* Default app font — see src/config/fonts.ts and docs/FONTS.md */
-  --app-font: var(--font-poppins), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --app-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 html {
