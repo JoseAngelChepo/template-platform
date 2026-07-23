@@ -15,7 +15,6 @@ import createServices, {
   type UsernameAvailabilityResponse,
 } from "@/data/api/server"
 import { ApiServices } from "@/data/api/server/config"
-import auth from "@/data/api/server/auth"
 
 type UserProfile = Record<string, unknown> | null
 
@@ -36,13 +35,8 @@ type ServicesContextValue = {
       username: string,
     ) => Promise<UsernameAvailabilityResponse>
     login: (payload: { email: string; password: string }) => Promise<AuthSessionPayload | false>
-    loginGoogle: (payload: {
-      access_token: string
-      refresh_token: string
-      role?: string | null
-    }) => Promise<void>
     logout: () => Promise<void>
-    getUser: () => Promise<Record<string, unknown> | false | null>
+    getUser: (options?: { silent?: boolean }) => Promise<Record<string, unknown> | false | null>
     refreshUser: () => Promise<Record<string, unknown> | false | null>
   }
 }
@@ -56,44 +50,42 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile>(null)
   const Services = useMemo(() => createServices(ApiServices), [])
 
-  const setupCookie = useCallback((name: string, value: string, days?: number) => {
-    const expires = days
-      ? new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString()
-      : ""
-    if (typeof document === "undefined") return
-    const secure =
-      typeof window !== "undefined" && window.location?.protocol === "https:"
-        ? "; Secure"
-        : ""
-    document.cookie = `${name}=${value}${expires ? `; expires=${expires}` : ""}; path=/; SameSite=Strict${secure}`
-  }, [])
-
-  const getUser = useCallback(async () => {
-    try {
-      return await Services.getUser()
-    } catch (err: unknown) {
-      const message =
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-          ? String((err.response.data as { message?: string }).message)
-          : "An error occurred while getting user"
-      toast.error(message)
-      return false
-    }
-  }, [Services])
+  const getUser = useCallback(
+    async (options?: { silent?: boolean }) => {
+      try {
+        return await Services.getUser()
+      } catch (err: unknown) {
+        if (!options?.silent) {
+          const message =
+            err &&
+            typeof err === "object" &&
+            "response" in err &&
+            err.response &&
+            typeof err.response === "object" &&
+            "data" in err.response &&
+            err.response.data &&
+            typeof err.response.data === "object" &&
+            "message" in err.response.data
+              ? String((err.response.data as { message?: string }).message)
+              : "An error occurred while getting user"
+          toast.error(message)
+        }
+        return false
+      }
+    },
+    [Services],
+  )
 
   const refreshUser = useCallback(async () => {
-    const userData = await getUser()
+    const userData = await getUser({ silent: true })
     if (userData && typeof userData === "object") {
       setUser(userData)
       setRole(userData.role != null ? String(userData.role) : null)
+      setIsLoggedIn(true)
+    } else {
+      setUser(null)
+      setRole(null)
+      setIsLoggedIn(false)
     }
     return userData
   }, [getUser])
@@ -113,79 +105,53 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
     }) => {
       try {
         const data = await Services.signUp(payload)
-        setupCookie("access_token", data.access_token)
-        setupCookie("refresh_token", data.refresh_token)
-        setupCookie("role", String(data.user.role ?? ""))
-        setIsLoggedIn(true)
-        setRole(data.user.role != null ? String(data.user.role) : null)
         const normalized = normalizeAuthMeUser(data.user)
-        setUser(
-          normalized != null && typeof normalized === "object" && !Array.isArray(normalized)
-            ? (normalized as Record<string, unknown>)
-            : null,
-        )
+        if (normalized != null && typeof normalized === "object" && !Array.isArray(normalized)) {
+          const profile = normalized as Record<string, unknown> & { role?: unknown }
+          setUser(profile)
+          setRole(profile.role != null ? String(profile.role) : null)
+        } else {
+          setUser(null)
+          setRole(null)
+        }
+        setIsLoggedIn(true)
         return data
       } catch {
         toast.error("Sign up failed")
         return false
       }
     },
-    [Services, setupCookie],
+    [Services],
   )
 
   const login = useCallback(
     async (payload: { email: string; password: string }) => {
       try {
         const data = await Services.login(payload)
-        setupCookie("access_token", data.access_token)
-        setupCookie("refresh_token", data.refresh_token)
-        setupCookie("role", String(data.user.role ?? ""))
-        setIsLoggedIn(true)
-        setRole(data.user.role != null ? String(data.user.role) : null)
         const normalized = normalizeAuthMeUser(data.user)
-        setUser(
-          normalized != null && typeof normalized === "object" && !Array.isArray(normalized)
-            ? (normalized as Record<string, unknown>)
-            : null,
-        )
+        if (normalized != null && typeof normalized === "object" && !Array.isArray(normalized)) {
+          const profile = normalized as Record<string, unknown> & { role?: unknown }
+          setUser(profile)
+          setRole(profile.role != null ? String(profile.role) : null)
+        } else {
+          setUser(null)
+          setRole(null)
+        }
+        setIsLoggedIn(true)
         return data
       } catch {
         toast.error("Invalid email or password")
         return false
       }
     },
-    [Services, setupCookie],
-  )
-
-  const loginGoogle = useCallback(
-    async (payload: {
-      access_token: string
-      refresh_token: string
-      role?: string | null
-    }) => {
-      setupCookie("access_token", payload.access_token)
-      setupCookie("refresh_token", payload.refresh_token)
-      setupCookie("role", payload.role != null ? String(payload.role) : "")
-      setIsLoggedIn(true)
-      void getUser().then((userData) => {
-        if (userData && typeof userData === "object") {
-          setUser(userData)
-          setRole(userData.role != null ? String(userData.role) : null)
-        }
-      })
-    },
-    [getUser, setupCookie],
+    [Services],
   )
 
   const logout = useCallback(async () => {
     try {
       await Services.logout()
     } catch {
-      // ignore (e.g. already invalid token)
-    }
-    auth.logout()
-    if (typeof sessionStorage !== "undefined") {
-      sessionStorage.clear()
+      // ignore (e.g. already invalid token/session)
     }
     setIsLoggedIn(false)
     setRole(null)
@@ -193,21 +159,9 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
   }, [Services])
 
   const refreshData = useCallback(async () => {
-    const isLogged = auth.isLoggedIn()
-    if (isLogged) {
-      setIsLoggedIn(true)
-      const userData = await getUser()
-      if (userData && typeof userData === "object") {
-        setUser(userData)
-        setRole(userData.role != null ? String(userData.role) : null)
-      }
-    } else {
-      setUser(null)
-      setRole(null)
-      setIsLoggedIn(false)
-    }
+    await refreshUser()
     setStateService(true)
-  }, [getUser])
+  }, [refreshUser])
 
   useEffect(() => {
     void refreshData()
@@ -223,7 +177,6 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
         signUp,
         checkUsernameAvailability,
         login,
-        loginGoogle,
         logout,
         getUser,
         refreshUser,
@@ -237,7 +190,6 @@ export function ServicesProvider({ children }: { children: React.ReactNode }) {
       signUp,
       checkUsernameAvailability,
       login,
-      loginGoogle,
       logout,
       getUser,
       refreshUser,
