@@ -7,6 +7,22 @@ function basicAuthHeader(credentials: string): string {
   return `Basic ${btoa(credentials)}`
 }
 
+function getCookieValue(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`))
+  const value = match?.[1]?.trim()
+  if (!value) return null
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+const CSRF_COOKIE_NAME = "csrf_token"
+const CSRF_HEADER_NAME = "X-CSRF-Token"
+const REQUEST_ID_HEADER = "x-request-id"
+
 const ApiServices = axios.create({
   baseURL: NEXT_PUBLIC_API_URL,
   withCredentials: true,
@@ -19,8 +35,6 @@ function getLocaleFromCookie(): string {
   const value = raw && raw.length > 0 ? raw : null
   return value === "es" || value === "en" ? value : "en"
 }
-
-const REQUEST_ID_HEADER = "x-request-id"
 
 function generateRequestId(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -38,6 +52,11 @@ ApiServices.interceptors.request.use(
       config.headers.Authorization = basicAuthHeader(NEXT_PUBLIC_API_BASIC_AUTH)
     }
 
+    const csrfToken = getCookieValue(CSRF_COOKIE_NAME)
+    if (csrfToken) {
+      config.headers[CSRF_HEADER_NAME] = csrfToken
+    }
+
     config.headers[REQUEST_ID_HEADER] = generateRequestId()
     const locale = getLocaleFromCookie()
     config.headers["Accept-Language"] = locale
@@ -51,7 +70,12 @@ const refreshSession = async (): Promise<void> => {
   await axios.post(
     `${NEXT_PUBLIC_API_URL}/auth/refresh`,
     {},
-    { withCredentials: true },
+    {
+      withCredentials: true,
+      headers: {
+        ...(getCookieValue(CSRF_COOKIE_NAME) ? { [CSRF_HEADER_NAME]: getCookieValue(CSRF_COOKIE_NAME) } : {}),
+      },
+    },
   )
 }
 
