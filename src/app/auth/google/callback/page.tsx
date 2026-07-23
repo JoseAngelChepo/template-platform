@@ -4,13 +4,9 @@ import { Suspense, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "@/lib/toast"
 import Loader from "@/components/ui/Loader"
+import { normalizeAuthRedirect, parseGoogleAuthState } from "@/lib/auth-redirect"
 import { useServices } from "@/data/providers/ServicesProvider"
 
-function normalizeRedirectPath(input: unknown): string | null {
-  if (typeof input !== "string") return null
-  if (!input.startsWith("/") || input.startsWith("//")) return null
-  return input
-}
 
 function GoogleCallbackContent() {
   const router = useRouter()
@@ -34,18 +30,9 @@ function GoogleCallbackContent() {
 
       const redirect = searchParams.get("redirect")
       const stateParam = searchParams.get("state")
-      let finalRedirect = "/dashboard"
-
-      if (stateParam) {
-        try {
-          const decodedState = JSON.parse(atob(stateParam)) as { redirect?: string }
-          finalRedirect = normalizeRedirectPath(decodedState.redirect) || finalRedirect
-        } catch {
-          // Keep default redirect when state cannot be parsed.
-        }
-      } else {
-        finalRedirect = normalizeRedirectPath(redirect) || finalRedirect
-      }
+      const stateRedirect = parseGoogleAuthState(stateParam)
+      const finalRedirect =
+        stateRedirect || normalizeAuthRedirect(redirect, "/dashboard")
 
       router.replace(finalRedirect)
     }
