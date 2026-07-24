@@ -7,8 +7,25 @@ function basicAuthHeader(credentials: string): string {
   return `Basic ${btoa(credentials)}`
 }
 
+function getCookieValue(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`))
+  const value = match?.[1]?.trim()
+  if (!value) return null
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+const CSRF_COOKIE_NAME = "csrf_token"
+const CSRF_HEADER_NAME = "X-CSRF-Token"
+const REQUEST_ID_HEADER = "x-request-id"
+
 const ApiServices = axios.create({
   baseURL: NEXT_PUBLIC_API_URL,
+  withCredentials: true,
 })
 
 function getLocaleFromCookie(): string {
@@ -18,8 +35,6 @@ function getLocaleFromCookie(): string {
   const value = raw && raw.length > 0 ? raw : null
   return value === "es" || value === "en" ? value : "en"
 }
-
-const REQUEST_ID_HEADER = "x-request-id"
 
 function generateRequestId(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -31,29 +46,15 @@ function generateRequestId(): string {
   )
 }
 
-function setupCookie(name: string, value: string, days?: number): void {
-  const expires = days
-    ? new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString()
-    : ""
-  if (typeof document === "undefined") return
-  const secure =
-    typeof window !== "undefined" && window.location?.protocol === "https:"
-      ? "; Secure"
-      : ""
-  document.cookie = `${name}=${value}${expires ? `; expires=${expires}` : ""}; path=/; SameSite=Strict${secure}`
-}
-
 ApiServices.interceptors.request.use(
   async (config) => {
-    try {
-      const token = auth.getToken()
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-      } else if (NEXT_PUBLIC_API_BASIC_AUTH) {
-        config.headers.Authorization = basicAuthHeader(NEXT_PUBLIC_API_BASIC_AUTH)
-      }
-    } catch {
-      console.info("token not available")
+    if (NEXT_PUBLIC_API_BASIC_AUTH) {
+      config.headers.Authorization = basicAuthHeader(NEXT_PUBLIC_API_BASIC_AUTH)
+    }
+
+    const csrfToken = getCookieValue(CSRF_COOKIE_NAME)
+    if (csrfToken) {
+      config.headers[CSRF_HEADER_NAME] = csrfToken
     }
 
     config.headers[REQUEST_ID_HEADER] = generateRequestId()
@@ -65,24 +66,17 @@ ApiServices.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
-const refreshAccessToken = async (): Promise<string> => {
-  const refreshToken = auth.getRefreshToken()
-  if (!refreshToken) {
-    auth.logout()
-    throw new Error("No refresh token")
-  }
-  const response = await axios.post(`${NEXT_PUBLIC_API_URL}/auth/refresh`, {
-    refresh_token: refreshToken,
-  })
-  const { access_token, refresh_token, user } = response.data as {
-    access_token: string
-    refresh_token: string
-    user: { role?: string }
-  }
-  setupCookie("access_token", access_token)
-  setupCookie("refresh_token", refresh_token)
-  if (user?.role) setupCookie("role", String(user.role))
-  return access_token
+const refreshSession = async (): Promise<void> => {
+  await axios.post(
+    `${NEXT_PUBLIC_API_URL}/auth/refresh`,
+    {},
+    {
+      withCredentials: true,
+      headers: {
+        ...(getCookieValue(CSRF_COOKIE_NAME) ? { [CSRF_HEADER_NAME]: getCookieValue(CSRF_COOKIE_NAME) } : {}),
+      },
+    },
+  )
 }
 
 ApiServices.interceptors.response.use(
@@ -97,13 +91,8 @@ ApiServices.interceptors.response.use(
     ) {
       originalRequest._retry = true
       try {
-        const newToken = await refreshAccessToken()
-        if (newToken) {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`
-          return ApiServices(originalRequest)
-        }
-        auth.logout()
-        return Promise.reject(error)
+        await refreshSession()
+        return ApiServices(originalRequest)
       } catch {
         auth.logout()
         return Promise.reject(error)

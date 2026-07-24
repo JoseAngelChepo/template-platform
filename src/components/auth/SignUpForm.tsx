@@ -10,6 +10,10 @@ import GoogleAuthButton from "@/components/auth/GoogleAuthButton"
 import { useServices } from "@/data/providers/ServicesProvider"
 import { NEXT_PUBLIC_API_URL } from "@/config/env"
 import {
+  buildGoogleAuthState,
+  normalizeAuthRedirect,
+} from "@/lib/auth-redirect"
+import {
   isUsernameFormatValid,
   normalizeUsername,
   USERNAME_MAX,
@@ -32,7 +36,7 @@ export default function SignUpForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectPath = searchParams.get("redirect")
+  const redirectPath = normalizeAuthRedirect(searchParams.get("redirect"))
   const {
     services: { signUp, checkUsernameAvailability },
   } = useServices()
@@ -121,7 +125,7 @@ export default function SignUpForm() {
       })
       if (response) {
         toast.success("Account created")
-        router.push(redirectPath || "/dashboard")
+        router.push(redirectPath)
       }
     } catch {
       setError("root", {
@@ -133,12 +137,13 @@ export default function SignUpForm() {
     }
   }
 
-  const signInPath = redirectPath
-    ? `/sign-in?redirect=${encodeURIComponent(redirectPath)}`
-    : "/sign-in"
+  const signInPath =
+    redirectPath === "/dashboard"
+      ? "/sign-in"
+      : `/sign-in?redirect=${encodeURIComponent(redirectPath)}`
 
   const onGoogleSignUp = () => {
-    const state = btoa(JSON.stringify({ redirect: redirectPath || "/dashboard" }))
+    const state = buildGoogleAuthState(redirectPath)
     window.location.assign(
       `${NEXT_PUBLIC_API_URL}/auth/google?state=${encodeURIComponent(state)}`,
     )

@@ -1,12 +1,9 @@
 import type { AxiosInstance } from "axios"
-import auth from "@/data/api/server/auth"
 import { normalizeAuthMeUser } from "./normalizeAuthMeUser"
 
 export { normalizeAuthMeUser } from "./normalizeAuthMeUser"
 
-export interface AuthSessionPayload {
-  access_token: string
-  refresh_token: string
+export type AuthSessionPayload = {
   user: Record<string, unknown>
 }
 
@@ -37,16 +34,14 @@ export type ServicesApi = {
 
 function createServices(api: AxiosInstance): ServicesApi {
   return {
-    signUp: (data) =>
-      api.post("/auth/register", data).then((r) => r.data as AuthSessionPayload),
+    signUp: (data) => api.post("/auth/register", data).then((r) => r.data as AuthSessionPayload),
     checkUsernameAvailability: (username) =>
       api
         .get<UsernameAvailabilityResponse>("/auth/username/availability", {
           params: { username },
         })
         .then((r) => r.data),
-    login: (data) =>
-      api.post("/auth/login", data).then((r) => r.data as AuthSessionPayload),
+    login: (data) => api.post("/auth/login", data).then((r) => r.data as AuthSessionPayload),
     getUser: () =>
       api.get("/users/me").then((r) => {
         const normalized = normalizeAuthMeUser(r.data ?? null)
@@ -55,11 +50,7 @@ function createServices(api: AxiosInstance): ServicesApi {
         }
         return normalized as Record<string, unknown>
       }),
-    logout: () => {
-      const refreshToken = auth.getRefreshToken()
-      if (!refreshToken) return Promise.resolve()
-      return api.post("/auth/logout", { refresh_token: refreshToken })
-    },
+    logout: () => api.post("/auth/logout", {}),
   }
 }
 

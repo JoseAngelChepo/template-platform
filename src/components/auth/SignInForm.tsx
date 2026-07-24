@@ -8,6 +8,10 @@ import Button from "@/components/ui/Button"
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton"
 import { useServices } from "@/data/providers/ServicesProvider"
 import { NEXT_PUBLIC_API_URL } from "@/config/env"
+import {
+  buildGoogleAuthState,
+  normalizeAuthRedirect,
+} from "@/lib/auth-redirect"
 
 type FormValues = {
   email: string
@@ -19,7 +23,7 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectPath = searchParams.get("redirect")
+  const redirectPath = normalizeAuthRedirect(searchParams.get("redirect"))
   const {
     services: { login },
   } = useServices()
@@ -38,7 +42,7 @@ export default function SignInForm() {
         setError("root", { type: "manual", message: "Invalid email or password" })
         return
       }
-      router.push(redirectPath || "/dashboard")
+      router.push(redirectPath)
     } catch {
       setError("root", { type: "manual", message: "Something went wrong. Try again." })
     } finally {
@@ -46,12 +50,13 @@ export default function SignInForm() {
     }
   }
 
-  const signUpPath = redirectPath
-    ? `/sign-up?redirect=${encodeURIComponent(redirectPath)}`
-    : "/sign-up"
+  const signUpPath =
+    redirectPath === "/dashboard"
+      ? "/sign-up"
+      : `/sign-up?redirect=${encodeURIComponent(redirectPath)}`
 
   const onGoogleLogin = () => {
-    const state = btoa(JSON.stringify({ redirect: redirectPath || "/dashboard" }))
+    const state = buildGoogleAuthState(redirectPath)
     window.location.assign(
       `${NEXT_PUBLIC_API_URL}/auth/google?state=${encodeURIComponent(state)}`,
     )
