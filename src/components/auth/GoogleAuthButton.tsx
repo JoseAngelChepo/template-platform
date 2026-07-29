@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 type Props = {
   text: string
   onClick: () => void
@@ -6,7 +8,7 @@ type Props = {
 export default function GoogleAuthButton({ text, onClick }: Props) {
   return (
     <button className="btn-google" type="button" onClick={onClick}>
-      <img
+      <Image
         className="btn-google__icon"
         src="/google-icon.png"
         alt=""
