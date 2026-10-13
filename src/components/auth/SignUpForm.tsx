@@ -144,6 +144,8 @@ export default function SignUpForm() {
 
   const onGoogleSignUp = () => {
     const state = buildGoogleAuthState(redirectPath)
+    // OAuth navigates to the separate API origin rather than an internal Next.js route.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.assign(
       `${NEXT_PUBLIC_API_URL}/auth/google?state=${encodeURIComponent(state)}`,
     )

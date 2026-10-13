@@ -2,7 +2,7 @@
 
 Next.js frontend paired with [**template-services**](https://github.com/JoseAngelChepo/template-services). Public landing, auth, and protected dashboard.
 
-**First time here?** Full local setup (clone both repos, MongoDB on macOS, env vars): [**template-local-setup**](https://github.com/JoseAngelChepo/template-local-setup) Claude Agent Skill.
+**First time here?** Full local setup (clone both repos, local MongoDB or Atlas, env vars): [**template-local-setup**](https://github.com/JoseAngelChepo/template-local-setup) Claude Agent Skill.
 
 **Claude Code** — in your agent’s chat, send:
 
@@ -27,7 +27,7 @@ Locale prefixes `/en` and `/es` are stripped by `src/proxy.ts`; locale is stored
 
 ```bash
 cp .env.example .env.local
-npm install
+npm ci
 npm run dev
 ```
 
@@ -137,3 +137,18 @@ These paths are allowed without a session: `/`, `/sign-up`, `/sign-in`, `/auth/g
 1. Check **template-services** for API behavior.
 2. Read **`template-requirements.mdc`** for fork and styling rules.
 3. Read **`docs/COMPONENTS.md`** before adding or moving components.
+
+## Dependency maintenance
+
+Use npm and the committed `package-lock.json` for reproducible installs. Run
+`npm ci`, the checks above, and `npm run audit:security` before delivery. The CI
+workflow also checks production dependencies. To update dependencies, apply
+compatible patches, raise affected minimum versions in `package.json`, regenerate
+the lockfile, and rerun validation; do not use `npm audit fix --force` blindly.
+
+The full `npm audit` currently reports the development-only ESLint dependency
+chain `eslint-config-next → @next/eslint-plugin-next → fast-glob → micromatch → braces`.
+[GHSA-vfj7-8cjw-p6xm / CVE-2026-93687](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
+has no published patched version as of 2026-10-13. This chain is absent from
+production installs. Do not downgrade ESLint to the incompatible Next.js 14
+configuration to silence it. Recheck the full audit when updating the toolchain.
