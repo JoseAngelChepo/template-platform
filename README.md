@@ -146,9 +146,12 @@ workflow also checks production dependencies. To update dependencies, apply
 compatible patches, raise affected minimum versions in `package.json`, regenerate
 the lockfile, and rerun validation; do not use `npm audit fix --force` blindly.
 
-The full `npm audit` currently reports the development-only ESLint dependency
-chain `eslint-config-next → @next/eslint-plugin-next → fast-glob → micromatch → braces`.
-[GHSA-vfj7-8cjw-p6xm / CVE-2026-93687](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
-has no published patched version as of 2026-10-13. This chain is absent from
-production installs. Do not downgrade ESLint to the incompatible Next.js 14
-configuration to silence it. Recheck the full audit when updating the toolchain.
+Security review on **2026-11-12**: Next.js and eslint-config-next were updated to
+16.4.6, and vulnerable transitive dependencies were refreshed in the lockfile.
+The production audit reports **zero vulnerabilities**. The full audit reports
+**8 moderate findings** through the development-only typescript-eslint/minimatch
+chain ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)).
+Do not downgrade eslint-config-next to v15 or force a major minimatch override
+merely to silence the audit. Recheck compatible upstream releases during the
+next toolchain update. The older braces advisory is no longer reported by this
+lockfile's audit.
